@@ -27,7 +27,7 @@ class TestCLIIntegration(unittest.TestCase):
     def test_cert_scan_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = os.path.join(tmp, "scan.json")
-            result = self._run(["cert-scan", os.path.dirname(SAMPLE_CERT), "--output", out])
+            result = self._run(["scan-certs", os.path.dirname(SAMPLE_CERT), "--output", out])
             with open(out, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
             assert data["findings"]
@@ -37,7 +37,7 @@ class TestCLIIntegration(unittest.TestCase):
     def test_assess_produces_score_and_grade(self):
         with tempfile.TemporaryDirectory() as tmp:
             scan_out = os.path.join(tmp, "scan.json")
-            self._run(["cert-scan", os.path.dirname(SAMPLE_CERT), "--output", scan_out])
+            self._run(["scan-certs", os.path.dirname(SAMPLE_CERT), "--output", scan_out])
             assess_out = os.path.join(tmp, "assessment.json")
             result = self._run(["assess", scan_out, "--shelf-life", "10", "--migration-time", "3", "--output", assess_out])
             with open(assess_out, "r", encoding="utf-8") as fh:
@@ -52,7 +52,7 @@ class TestCLIIntegration(unittest.TestCase):
     def test_report_generates_html(self):
         with tempfile.TemporaryDirectory() as tmp:
             scan_out = os.path.join(tmp, "scan.json")
-            self._run(["cert-scan", os.path.dirname(SAMPLE_CERT), "--output", scan_out])
+            self._run(["scan-certs", os.path.dirname(SAMPLE_CERT), "--output", scan_out])
             assess_out = os.path.join(tmp, "assessment.json")
             self._run(["assess", scan_out, "--shelf-life", "10", "--migration-time", "3", "--output", assess_out])
             html_out = os.path.join(tmp, "report.html")
