@@ -1,0 +1,40 @@
+name: PQC Readiness Scan
+
+on:
+  pull_request:
+    paths:
+      - 'certs/**'
+      - '.github/workflows/pqc-scan.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'certs/**'
+
+jobs:
+  pqc-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run PQC gatekeeper
+        run: python -m src.ci.gatekeeper --cert-dir certs
+
+      - name: Fail on weak certificates
+        run: |
+          python - <<'PY'
+          import json, sys
+          from src.ci import PQCGatekeeper
+          result = PQCGatekeeper('certs').run()
+          print(json.dumps(result, indent=2))
+          if not result['passed']:
+              print('PQC readiness check failed: weak or expired certificates detected.')
+              sys.exit(1)
+          PY

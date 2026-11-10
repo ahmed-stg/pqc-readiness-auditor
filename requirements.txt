@@ -1,0 +1,8 @@
+cryptography>=41.0.0
+paramiko>=3.0.0
+scapy>=2.5.0
+pyopenssl>=23.0.0
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0
+cyclonedx-python>=3.0.0

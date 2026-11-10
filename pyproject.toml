@@ -1,0 +1,25 @@
+[project]
+name = "pqc-readiness-auditor"
+version = "0.1.0"
+description = "Active security platform for cryptographic asset scanning, quantum risk assessment, and automated remediation."
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=41.0.0",
+    "paramiko>=3.0.0",
+    "scapy>=2.5.0",
+    "pyopenssl>=23.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.0.0",
+    "cyclonedx-python>=3.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+pqc-scan = "src.cli:main"
