@@ -38,6 +38,9 @@ def main(argv: typing.Optional[typing.List[str]] = None) -> int:
     rem_parser.add_argument("--output", default=None)
 
     args = parser.parse_args(argv)
+    if not getattr(args, "command", None):
+        parser.print_help()
+        return 1
 
     if args.command == "cert-scan":
         results = CertScanner().scan_directory(args.directory)
@@ -53,19 +56,33 @@ def main(argv: typing.Optional[typing.List[str]] = None) -> int:
         return 0
 
     if args.command == "assess":
-        import json
-        findings = json.loads(open(args.input_json).read()).get("findings", [])
+        import json as _json
+        try:
+            with open(args.input_json, "r", encoding="utf-8") as fh:
+                payload = _json.load(fh)
+        except (_json.JSONDecodeError, FileNotFoundError):
+            print(f"Could not read assessment input: {args.input_json}", file=sys.stderr)
+            return 2
+        findings = payload.get("findings", payload if isinstance(payload, list) else [])
         assessment = RiskScorer().assess(findings, args.shelf_life, args.migration_time)
         if args.output:
-            ReportGenerator().generate_html(assessment, args.output)
-            ReportGenerator().generate_json(assessment, args.output.replace(".html", ".json") if args.output.endswith(".html") else args.output + ".json")
+            if args.output.endswith(".html"):
+                ReportGenerator().generate_html(assessment, args.output)
+                ReportGenerator().generate_json(assessment, args.output.replace(".html", ".json", 1))
+            else:
+                ReportGenerator().generate_json(assessment, args.output)
         else:
             print(json_dumps(assessment))
         return 0
 
     if args.command == "report":
-        import json
-        assessment = json.loads(open(args.input_json).read())
+        import json as _json
+        try:
+            with open(args.input_json, "r", encoding="utf-8") as fh:
+                assessment = _json.load(fh)
+        except (_json.JSONDecodeError, FileNotFoundError):
+            print(f"Could not read report input: {args.input_json}", file=sys.stderr)
+            return 2
         out = args.output or "report.html"
         ReportGenerator().generate_html(assessment, out)
         print(f"Report written to {out}")

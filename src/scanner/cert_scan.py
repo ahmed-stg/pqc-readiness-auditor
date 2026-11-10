@@ -50,8 +50,8 @@ class CertScanner:
 
         sig_alg = cert.get_signature_algorithm().decode("ascii", errors="replace").lower()
         pubkey = cert.get_pubkey()
-        key_type = pubkey.type
-        key_size = pubkey.bits
+        key_type = pubkey.type() if callable(pubkey.type) else pubkey.type
+        key_size = pubkey.bits() if callable(pubkey.bits) else pubkey.bits
 
         weakness = []
         if "md5" in sig_alg or "sha1" in sig_alg:
