@@ -6,7 +6,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from . import __version__
+from src import __version__
 
 
 def create_app() -> FastAPI:

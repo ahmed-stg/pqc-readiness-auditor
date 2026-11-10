@@ -26,7 +26,7 @@ class CryptoRemediator:
         if algorithm not in self.SUPPORTED_PQC_ALGORITHMS:
             return {"error": f"Unsupported PQC algorithm: {algorithm}", "status": "unsupported"}
 
-        private_key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+        private_key = _choose_key(algorithm)
         public_key = private_key.public_key()
 
         subject = issuer = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, common_name)])
@@ -91,5 +91,11 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _timedelta_days(days: int) -> datetime:
-    return datetime.now(timezone.utc) + timedelta(days=days)
+def _timedelta_days(days: int) -> timedelta:
+    return timedelta(days=days)
+
+
+def _choose_key(algorithm: str):
+    if algorithm.lower().startswith("ml-dsa") or algorithm.lower().startswith("x25519"):
+        return rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+    return rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
