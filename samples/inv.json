@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "items": [
+    {
+      "identifier": "samples/weak_cert.pem",
+      "data_shelf_life_years": 20.0,
+      "migration_time_years": 5.0,
+      "quantum_arrival_scenario": "conservative",
+      "tags": ["identity", "high-sensitivity"]
+    }
+  ]
+}

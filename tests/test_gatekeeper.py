@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 
-from src.ci.gatekeeper import PQCGatekeeper
+from pqc_auditor.ci.gatekeeper import PQCGatekeeper
 
 
 class TestGatekeeper(unittest.TestCase):

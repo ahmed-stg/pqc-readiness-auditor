@@ -6,7 +6,7 @@ import unittest
 
 from OpenSSL import crypto
 
-from src.scanner.cert_scan import CertScanner
+from pqc_auditor.scanner.cert_scan import CertScanner
 
 
 class TestCertScan(unittest.TestCase):
@@ -24,8 +24,9 @@ class TestCertScan(unittest.TestCase):
         result = scanner.scan_cert(cert, path="sample.pem")
         self.assertEqual(result["key_type"], "rsa")
         self.assertEqual(result["key_size"], 2048)
-        self.assertIn("rsa key too small", result["weakness"])
+        self.assertIn("quantum-vulnerable key algorithm", result["findings"])
         self.assertEqual(result["status"], "weak")
+        self.assertEqual(result["category"], "quantum_vulnerable")
 
     def test_file_not_found_raises(self):
         scanner = CertScanner()

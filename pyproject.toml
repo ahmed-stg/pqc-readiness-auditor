@@ -1,8 +1,30 @@
 [project]
 name = "pqc-readiness-auditor"
-version = "0.1.0"
-description = "Active security platform for cryptographic asset scanning, quantum risk assessment, and automated remediation."
+version = "0.2.0"
+description = "Scan certificates, TLS/SSH endpoints, PCAP captures, and source code for classically weak and quantum-vulnerable cryptography. Assess exposure with Mosca's Theorem, map compliance against NIST IR 8547 and CNSA 2.0, and export a CycloneDX 1.6 Cryptographic Bill of Materials."
 requires-python = ">=3.10"
+license = {text = "MIT"}
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Security Engineers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Build Tools",
+]
+keywords = ["pqc", "post-quantum", "cryptography", "tls", "ssh", "cbom", "cyclonedx", "nist", "cnsa2"]
+authors = [
+    {name = "Ahmed Kaouadji", email = "a.kaouadji@esi-sba.dz"},
+]
+
 dependencies = [
     "cryptography>=41.0.0",
     "paramiko>=3.0.0",
@@ -19,7 +41,8 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["pqc_auditor*"]
 
 [project.scripts]
-pqc-scan = "src.cli:main"
+pqc-auditor = "pqc_auditor.cli:main"

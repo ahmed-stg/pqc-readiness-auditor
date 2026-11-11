@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.risk.compliance_mapper import ComplianceMapper
+from pqc_auditor.risk.compliance_mapper import ComplianceMapper
 
 
 class TestComplianceMapper(unittest.TestCase):

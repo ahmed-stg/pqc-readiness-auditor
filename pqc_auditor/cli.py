@@ -8,13 +8,12 @@ from typing import Optional
 
 import typer
 
-from src.scanner import CertScanner, TLSScanner, SSHScanner, PCAPScanner, SourceScanner, VPNScanner
-from src.risk import RiskScorer
-from src.remediation import CryptoRemediator
-from src.reporting import ReportGenerator
-from src.reporting.cbom_exporter import CBOMExporter
-from src.dashboard.fastapi_app import create_app
-from src import __version__
+from pqc_auditor.scanner import CertScanner, TLSScanner, SSHScanner, PCAPScanner, SourceScanner, VPNScanner
+from pqc_auditor.risk import RiskScorer
+from pqc_auditor.reporting import ReportGenerator
+from pqc_auditor.reporting.cbom_exporter import CBOMExporter
+from pqc_auditor import __version__, SCAN_RESULT_VERSION
+from pqc_auditor.ci import PQCGatekeeper
 
 app = typer.Typer(name="pqc-auditor", help="PQC Readiness Auditor CLI")
 app.version = __version__
@@ -189,11 +188,11 @@ def dashboard(port: int = typer.Option(8080, "--port", "-p", help="Port for the 
 @app.command()
 def gatekeeper(cert_dir: str = typer.Argument(..., help="Certificate directory to scan in CI")) -> None:
     """Run the CI gatekeeper and fail if weak/expired certs are found."""
-    from src.ci import PQCGatekeeper
+    from pqc_auditor.ci import PQCGatekeeper
     result = PQCGatekeeper(cert_dir).run()
     typer.echo(json.dumps(result, indent=2))
     if not result["passed"]:
-        typer.echo("PQC readiness check failed: weak or expired certificates detected.", err=True)
+        typer.echo("PQC readiness check failed: classically weak or expired certificates detected.", err=True)
         raise typer.Exit(code=1)
 
 

@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from src.risk.mosca_calculator import MoscaRiskCalculator
+from pqc_auditor.risk.mosca_calculator import MoscaRiskCalculator
+from pqc_auditor.schema import MoscaScenario
 
 
 class TestMoscaCalculator(unittest.TestCase):
     def setUp(self):
-        self.calc = MoscaRiskCalculator(quantum_arrival_year=2030)
+        self.calc = MoscaRiskCalculator(scenario=MoscaScenario.CONSERVATIVE)
 
     def test_at_risk_when_shelf_plus_migration_exceeds_quantum_arrival(self):
         result = self.calc.assess(data_shelf_life_years=10, migration_time_years=5)
