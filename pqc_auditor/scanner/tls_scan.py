@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import enum
 import socket
 import ssl
 import typing
+from datetime import datetime, timezone
 
 from OpenSSL import crypto
 
@@ -49,11 +49,11 @@ class TLSScanner:
                     cert = crypto.load_certificate(crypto.FILETYPE_ASN1, cert_bin)
                     cipher = ssock.cipher()
 
-                    now = datetime.utcnow()
+                    now = datetime.now(timezone.utc)
                     not_after = datetime.strptime(
                         cert.get_notAfter().decode("ascii"), "%Y%m%d%H%M%S%z"
                     )
-                    expired = now.replace(tzinfo=datetime.timezone.utc) > not_after
+                    expired = now > not_after
 
                     return self._build_finding(
                         host=host,
@@ -62,6 +62,7 @@ class TLSScanner:
                         cipher_name=cipher[0] if cipher else "unknown",
                         cipher_bits=cipher[2] if cipher else 0,
                         cert=cert,
+                        not_after=not_after,
                         expired=expired,
                         negotiated_groups=[],
                     )
@@ -81,6 +82,7 @@ class TLSScanner:
         cipher_name: str,
         cipher_bits: int,
         cert: crypto.X509,
+        not_after: datetime,
         expired: bool,
         negotiated_groups: typing.List[str],
     ) -> Finding:
@@ -114,7 +116,7 @@ class TLSScanner:
             cipher_bits=cipher_bits,
             subject=cert.get_subject().CN or "",
             issuer=cert.get_issuer().CN or "",
-            not_after=not_after.isoformat() if isinstance(not_after, datetime) else "",
+            not_after=not_after.isoformat(),
             expired=expired,
             signature_algorithm=sig_alg,
             key_type=TLSScanner._key_type_name(key_type),
@@ -122,7 +124,7 @@ class TLSScanner:
             negotiated_key_exchange_groups=negotiated_groups,
             findings=findings,
             category=category,
-            status=FindingStatus.WEAK if findings else (FindingStatus.EXPIRED if expired else FindingStatus.OK),
+            status=(FindingStatus.EXPIRED if expired else FindingStatus.WEAK) if findings else FindingStatus.OK,
         )
 
     @staticmethod
@@ -132,7 +134,4 @@ class TLSScanner:
         if key_type == crypto.TYPE_EC:
             return "ec"
         return "unknown"
-
-
-from datetime import datetime, timezone
 

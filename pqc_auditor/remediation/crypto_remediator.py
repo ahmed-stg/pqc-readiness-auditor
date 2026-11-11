@@ -2,11 +2,6 @@ from __future__ import annotations
 
 import typing
 
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-
 
 class CryptoRemediator:
     """Generate hybrid or PQC-ready certificates for remediation."""
@@ -26,47 +21,13 @@ class CryptoRemediator:
         if algorithm not in self.SUPPORTED_PQC_ALGORITHMS:
             return {"error": f"Unsupported PQC algorithm: {algorithm}", "status": "unsupported"}
 
-        private_key = _choose_key(algorithm)
-        public_key = private_key.public_key()
-
-        subject = issuer = x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, common_name)])
-        now = _utc_now()
-
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(issuer)
-            .public_key(public_key)
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(now)
-            .not_valid_after(now + _timedelta_days(validity_days))
-            .sign(private_key, hashes.SHA256(), default_backend())
-        )
-
-        cert_pem = cert.public_bytes(serialization.Encoding.PEM).decode("ascii")
-        key_pem = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
-        ).decode("ascii")
-
-        result = {
-            "algorithm": algorithm,
-            "common_name": common_name,
-            "validity_days": validity_days,
-            "status": "generated",
+        return {
+            "error": (
+                f"{algorithm} certificate generation is unavailable: cryptography's installed backend "
+                "does not provide a PQC key implementation. No classical substitute was generated."
+            ),
+            "status": "unsupported",
         }
-
-        if output_path:
-            with open(output_path, "w") as f:
-                f.write("-----BEGIN CERTIFICATE-----\n")
-                f.write(cert_pem)
-                f.write("-----END CERTIFICATE-----\n")
-            result["cert_path"] = output_path
-
-        result["certificate_pem"] = cert_pem
-        result["private_key_pem"] = key_pem
-        return result
 
     def remediate_findings(self, findings: typing.List[dict], algorithm: str = "ML-DSA") -> dict:
         remediated = 0
@@ -82,20 +43,3 @@ class CryptoRemediator:
 
     def _can_remediate(self, f: dict) -> bool:
         return f.get("key_type") in ("rsa", "ec")
-
-
-from datetime import datetime, timedelta, timezone
-
-
-def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _timedelta_days(days: int) -> timedelta:
-    return timedelta(days=days)
-
-
-def _choose_key(algorithm: str):
-    if algorithm.lower().startswith("ml-dsa") or algorithm.lower().startswith("x25519"):
-        return rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
-    return rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())

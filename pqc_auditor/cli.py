@@ -14,6 +14,9 @@ from pqc_auditor.reporting import ReportGenerator
 from pqc_auditor.reporting.cbom_exporter import CBOMExporter
 from pqc_auditor import __version__, SCAN_RESULT_VERSION
 from pqc_auditor.ci import PQCGatekeeper
+from pqc_auditor.inventory import load_inventory
+from pqc_auditor.remediation import CryptoRemediator
+from pqc_auditor.dashboard.fastapi_app import create_app
 
 app = typer.Typer(name="pqc-auditor", help="PQC Readiness Auditor CLI")
 app.version = __version__
@@ -94,6 +97,8 @@ def assess(
     shelf_life: float = typer.Option(10.0, "--shelf-life", help="Data shelf life in years"),
     migration_time: float = typer.Option(3.0, "--migration-time", help="Migration time in years"),
     output: Optional[str] = typer.Option(None, "--output", "-o", help="Optional output path"),
+    inventory: Optional[str] = typer.Option(None, "--inventory", help="Optional per-asset inventory JSON"),
+    scenario: Optional[str] = typer.Option(None, "--scenario", help="Quantum arrival scenario override"),
 ) -> None:
     """Run a risk assessment and compliance grading."""
     try:
@@ -104,7 +109,14 @@ def assess(
         raise typer.Exit(code=2)
 
     findings = payload.get("findings", payload if isinstance(payload, list) else [])
-    assessment = RiskScorer().assess(findings, data_shelf_life_years=shelf_life, migration_time_years=migration_time)
+    inventory_items = load_inventory(inventory)["items"] if inventory else None
+    assessment = RiskScorer().assess(
+        findings,
+        data_shelf_life_years=shelf_life,
+        migration_time_years=migration_time,
+        inventory=inventory_items,
+        scenario=scenario,
+    )
 
     if output:
         if output.endswith(".html"):

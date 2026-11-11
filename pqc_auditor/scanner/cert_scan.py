@@ -67,6 +67,9 @@ class CertScanner:
         if expired:
             findings.append("certificate expired")
             category = FindingCategory.CLASSICALLY_WEAK
+        if not_yet_valid:
+            findings.append("certificate not yet valid")
+            category = FindingCategory.CLASSICALLY_WEAK
 
         return Finding(
             file=path,

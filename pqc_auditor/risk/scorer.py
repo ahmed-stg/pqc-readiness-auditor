@@ -4,6 +4,7 @@ import typing
 
 from .mosca_calculator import MoscaRiskCalculator
 from .compliance_mapper import ComplianceMapper
+from pqc_auditor.schema import MoscaScenario
 
 
 class RiskScorer:
@@ -18,7 +19,18 @@ class RiskScorer:
         findings: typing.List[dict],
         data_shelf_life_years: float = 10.0,
         migration_time_years: float = 3.0,
+        inventory: typing.Optional[typing.List[dict]] = None,
+        scenario: typing.Optional[str] = None,
     ) -> dict:
+        if inventory:
+            data_shelf_life_years = max(
+                [float(item.get("data_shelf_life_years", data_shelf_life_years)) for item in inventory]
+            )
+            migration_time_years = max(
+                [float(item.get("migration_time_years", migration_time_years)) for item in inventory]
+            )
+        if scenario:
+            self.mosca.scenario = MoscaScenario(scenario.lower())
         mosca_result = self.mosca.assess(data_shelf_life_years, migration_time_years)
         compliance_result = self.compliance.grade(findings, standard="CNSA2")
 

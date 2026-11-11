@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import typing
 import datetime
+import html
 
 
 class ReportGenerator:
@@ -10,7 +11,9 @@ class ReportGenerator:
 
     def generate_html(self, assessment: dict, output_path: typing.Optional[str] = None) -> str:
         rows = "".join(
-            f"<tr><td>{r.get('file','')}</td><td>{r.get('status','')}</td><td>{r.get('weakness',[])}</td></tr>"
+            f"<tr><td>{html.escape(str(r.get('file', '')))}</td>"
+            f"<td>{html.escape(str(r.get('status', '')))}</td>"
+            f"<td>{html.escape(str(r.get('findings', r.get('weakness', []))))}</td></tr>"
             for r in assessment.get("findings", [])
         )
 

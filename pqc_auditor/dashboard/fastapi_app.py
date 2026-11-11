@@ -6,7 +6,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from src import __version__
+from pqc_auditor import __version__
 
 
 def create_app() -> FastAPI:
@@ -39,7 +39,7 @@ def create_app() -> FastAPI:
 
 class RemediationRequest(BaseModel):
     algorithm: str
-    count: int
+    count: int = 1
 
 
 def _dashboard_html() -> str:

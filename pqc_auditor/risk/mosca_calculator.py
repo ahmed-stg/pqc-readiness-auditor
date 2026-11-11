@@ -25,7 +25,8 @@ class MoscaRiskCalculator:
     ) -> MoscaAssessment:
         x = data_shelf_life_years
         y = migration_time_years
-        z = MOSCA_SCENARIOS[self.scenario] - 2026
+        scenario = MoscaScenario(self.scenario)
+        z = MOSCA_SCENARIOS[scenario] - 2026
 
         at_risk = (x + y) > z
         margin_years = z - (x + y)
@@ -44,7 +45,7 @@ class MoscaRiskCalculator:
             data_shelf_life_years=x,
             migration_time_years=y,
             quantum_arrival_year=MOSCA_SCENARIOS[self.scenario],
-            quantum_arrival_scenario=self.scenario,
+            quantum_arrival_scenario=scenario,
             mosca_x=x,
             mosca_y=y,
             mosca_z=z,

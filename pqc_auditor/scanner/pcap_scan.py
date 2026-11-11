@@ -3,7 +3,6 @@ from __future__ import annotations
 import typing
 
 from scapy.utils import RawPcapReader
-from scapy.layers.tls.handshake import TLSClientHello, TLSServerHello
 
 from pqc_auditor.schema import Finding, FindingStatus
 
@@ -15,6 +14,8 @@ class PCAPScanner:
         pass
 
     def analyze(self, path: str) -> Finding:
+        from scapy.layers.tls.handshake import TLSClientHello, TLSServerHello
+
         packet_count = 0
         tls_handshake_count = 0
 
@@ -41,11 +42,6 @@ class PCAPScanner:
 
 
 def _parse_packet(data: bytes):
-    from scapy.packet import Packet
-    from scapy.layers.tls.handshake import TLSClientHello
-
-    pkt = Packet()
-    pkt = pkt.__class__()
-    pkt = TLSClientHello()
-    return pkt
+    from scapy.layers.l2 import Ether
+    return Ether(data)
 

@@ -9,12 +9,12 @@ class CBOMExporter:
     def export(self, findings: typing.List[dict], output_path: typing.Optional[str] = None, format: str = "cyclonedx") -> dict:
         bom = {
             "bomFormat": "CycloneDX",
-            "specVersion": "1.5",
+            "specVersion": "1.6",
             "serialNumber": f"urn:uuid:{_uuid()}",
             "version": 1,
             "metadata": {
                 "timestamp": _now_iso(),
-                "tools": [{"name": "PQC Readiness Auditor", "version": "0.1.0"}],
+                "tools": [{"name": "PQC Readiness Auditor", "version": "0.2.0"}],
                 "component": {
                     "type": "application",
                     "name": "Scanned Environment",
@@ -33,13 +33,19 @@ class CBOMExporter:
 
 def _component_from_finding(f: dict) -> dict:
     alg = f.get("signature_algorithm", "") or f.get("algorithm", "")
-    comp_type = "library" if "source" in str(f.get("file", "")).lower() else "operating-system"
     return {
-        "type": comp_type,
+        "type": "cryptographic-asset",
         "name": f.get("subject") or f.get("file") or f.get("host", "unknown"),
         "version": f.get("not_after", ""),
-        "description": f.get("weakness", []),
+        "description": f.get("findings", f.get("weakness", [])),
         "purl": f"pkg:generic/{f.get('file', 'asset')}",
+        "cryptoProperties": {
+            "algorithm": alg,
+            "keySize": f.get("key_size", f.get("key_bits", 0)),
+            "signatureAlgorithm": f.get("signature_algorithm", ""),
+            "validFrom": f.get("not_before", ""),
+            "validTo": f.get("not_after", ""),
+        },
         "hashes": [{"alg": "SHA-256", "content": f.get("fingerprint", "")[:64]}] if f.get("fingerprint") else [],
     }
 
